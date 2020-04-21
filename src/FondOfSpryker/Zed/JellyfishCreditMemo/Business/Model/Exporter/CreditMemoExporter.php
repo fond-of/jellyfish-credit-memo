@@ -24,7 +24,7 @@ class CreditMemoExporter implements CreditMemoExporterInterface
     protected const CREDIT_MEMO_EXPORT_STATE_COMPLETE = 'complete';
 
     /**
-     * @var \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface 
+     * @var \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface
      */
     protected $adapter;
 
@@ -55,6 +55,7 @@ class CreditMemoExporter implements CreditMemoExporterInterface
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoRepositoryInterface $jellyfishCreditMemoRepository
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoConfig $jellyfishCreditMemoConfig
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManagerInterface $jellyfishCreditMemoEntityManager
+     * @param \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface $adapter
      */
     public function __construct(
         JellyfishCreditMemoMapperInterface $jellyfishCreditMemoMapper,
@@ -72,6 +73,8 @@ class CreditMemoExporter implements CreditMemoExporterInterface
     }
 
     /**
+     * Export data
+     * 
      * @throws \Exception
      */
     public function export(): void
@@ -92,10 +95,10 @@ class CreditMemoExporter implements CreditMemoExporterInterface
 
                 $jellyfishCreditMemo = $this->map($creditMemoTransfer);
                 $this->adapter->sendRequest($jellyfishCreditMemo);
-                
+
+                throw new \Exception($jellyfishCreditMemo->serialize());
                 $jellyfishCreditMemo->setExportState(static::CREDIT_MEMO_EXPORT_STATE_COMPLETE);
                 $this->jellyfishCreditMemoEntityManager->updateExportState($jellyfishCreditMemo);
-                throw new \Exception($jellyfishCreditMemo->serialize());
             }
 
         } catch (\Exception $exception) {
