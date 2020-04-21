@@ -7,23 +7,32 @@
         <property name="id" type="int"/>
         <property name="orderReference" type="string"/>
         <property name="customerReference" type="string"/>
+        <property name="creditMemoReference" type="string"/>
+        <property name="customer" type="JellyfishCreditMemoCustomer" />
         <property name="email" type="string"/>
         <property name="firstName" type="string"/>
         <property name="lastName" type="string"/>
-        <property name="billingAddress" type="JellyfishCreditMemoAddress"/>
-        <property name="shippingAddress" type="JellyfishCreditMemoAddress"/>
+        <property name="address" type="JellyfishCreditMemoAddress"/>
         <property name="items" type="JellyfishCreditMemoItem[]" singular="item"/>
+        <property name="locale" type="string"/>
+        <property name="store" type="string"/>
+        <property name="exportState" type="string"/>
+        <property name="createdAt" type="string"/>
+        <property name="updatedAt" type="string"/>
     </transfer>
 
     <transfer name="JellyfishCreditMemoAddress">
         <property name="id" type="int"/>
+        <property name="company" type="string"/>
         <property name="firstName" type="string"/>
         <property name="lastName" type="string"/>
+        <property name="middleName" type="string"/>
         <property name="address1" type="string"/>
         <property name="address2" type="string"/>
         <property name="address3" type="string"/>
         <property name="country" type="string"/>
         <property name="city" type="string"/>
+        <property name="region" type="string"/>
         <property name="zipCode" type="string"/>
         <property name="phone" type="string"/>
         <property name="fax" type="string"/>
@@ -33,6 +42,15 @@
         <property name="name" type="string"/>
         <property name="quantity" type="string"/>
         <property name="sku" type="string"/>
+    </transfer>
+
+    <transfer name="JellyfishCreditMemoCustomer">
+        <property name="externalReference" type="string"/>
+        <property name="firstName" type="string"/>
+        <property name="lastName" type="string"/>
+        <property name="email" type="string"/>
+        <property name="salutation" type="string"/>
+        <property name="phone" type="string"/>
     </transfer>
 
     <transfer name="CreditMemoCollection">

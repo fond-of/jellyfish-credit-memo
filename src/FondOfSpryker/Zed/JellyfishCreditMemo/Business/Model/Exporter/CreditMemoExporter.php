@@ -3,16 +3,35 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Exporter;
 
 use ArrayObject;
+use FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper\JellyfishCreditMemoMapperInterface;
+use FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoConfig;
+use FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManagerInterface;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoRepositoryInterface;
 use Generated\Shared\Transfer\CreditMemoTransfer;
+use Generated\Shared\Transfer\ItemStateTransfer;
+use Generated\Shared\Transfer\ItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoTransfer;
 use Generated\Shared\Transfer\JellyfishOrderTransfer;
 use Spryker\Shared\Log\LoggerTrait;
+use Spryker\Zed\Oms\Business\OmsFacadeInterface;
+use Spryker\Zed\Sales\Business\SalesFacadeInterface;
 
 class CreditMemoExporter implements CreditMemoExporterInterface
 {
     use LoggerTrait;
+
+    protected const CREDIT_MEMO_EXPORT_STATE_COMPLETE = 'complete';
+
+    /**
+     * @var \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface 
+     */
+    protected $adapter;
+
+    /**
+     * @var \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManagerInterface
+     */
+    protected $jellyfishCreditMemoEntityManager;
 
     /**
      * @var \FondOfSpryker\Zed\Jellyfish\Business\Model\Mapper\JellyfishCreditMemoMapperInterface
@@ -25,18 +44,31 @@ class CreditMemoExporter implements CreditMemoExporterInterface
     protected $jellyfishCreditMemoRepository;
 
     /**
+     * @var \FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoConfig
+     */
+    protected $jellyfishCreditMemoConfig;
+
+    /**
      * CreditMemoExporter constructor.
      *
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper\JellyfishCreditMemoMapperInterface $jellyfishCreditMemoMapper
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoRepositoryInterface $jellyfishCreditMemoRepository
+     * @param \FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoConfig $jellyfishCreditMemoConfig
+     * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManagerInterface $jellyfishCreditMemoEntityManager
      */
     public function __construct(
         JellyfishCreditMemoMapperInterface $jellyfishCreditMemoMapper,
-        JellyfishCreditMemoRepositoryInterface $jellyfishCreditMemoRepository
+        JellyfishCreditMemoRepositoryInterface $jellyfishCreditMemoRepository,
+        JellyfishCreditMemoConfig $jellyfishCreditMemoConfig,
+        JellyfishCreditMemoEntityManagerInterface $jellyfishCreditMemoEntityManager,
+        AdapterInterface $adapter
     )
     {
+        $this->adapter = $adapter;
         $this->jellyfishCreditMemoRepository = $jellyfishCreditMemoRepository;
         $this->jellyfishCreditMemoMapper = $jellyfishCreditMemoMapper;
+        $this->jellyfishCreditMemoConfig = $jellyfishCreditMemoConfig;
+        $this->jellyfishCreditMemoEntityManager = $jellyfishCreditMemoEntityManager;
     }
 
     /**
@@ -44,17 +76,26 @@ class CreditMemoExporter implements CreditMemoExporterInterface
      */
     public function export(): void
     {
-        $creditMemoCollectionTransfer = $this->jellyfishCreditMemoRepository->findPendingCreditMemoCollection();
-
-        if ($creditMemoCollectionTransfer === null || $creditMemoCollectionTransfer->getCreditMemos()->count() === 0) {
-            return;
-        }
-        
         try {
+            $creditMemoCollectionTransfer = $this->jellyfishCreditMemoRepository->findPendingCreditMemoCollection();
+
+            if ($creditMemoCollectionTransfer === null 
+                || $creditMemoCollectionTransfer->getCreditMemos()->count() === 0) {
+                return;
+            }
 
             foreach ($creditMemoCollectionTransfer->getCreditMemos() as $creditMemoTransfer) {
+                
+                if ($this->isValidForExport($creditMemoTransfer) === false) {
+                    continue;
+                }
+
                 $jellyfishCreditMemo = $this->map($creditMemoTransfer);
                 $this->adapter->sendRequest($jellyfishCreditMemo);
+                
+                $jellyfishCreditMemo->setExportState(static::CREDIT_MEMO_EXPORT_STATE_COMPLETE);
+                $this->jellyfishCreditMemoEntityManager->updateExportState($jellyfishCreditMemo);
+                throw new \Exception($jellyfishCreditMemo->serialize());
             }
 
         } catch (\Exception $exception) {
@@ -76,6 +117,44 @@ class CreditMemoExporter implements CreditMemoExporterInterface
             ->mapCreditMemoTransferToJellyfishCreditMemoTransfer($creditMemoTransfer);
 
         return $jellyfishCreditMemoTransfer;
+    }
+
+    /**
+     * @param \Generated\Shared\Transfer\CreditMemoTransfer $creditMemoTransfer
+     *
+     * @return bool
+     */
+    protected function isValidForExport(CreditMemoTransfer $creditMemoTransfer): bool
+    {
+        if ($creditMemoTransfer->getItems()->count() === 0) {
+            return false;
+        }
+
+        foreach ($creditMemoTransfer->getItems() as $itemTransfer) {
+            if ($this->getSalesOrderItemStateName($itemTransfer) !==
+                $this->jellyfishCreditMemoConfig->getSalesOrderItemStateRefunded()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param \Generated\Shared\Transfer\ItemTransfer $itemTransfer
+     *
+     * @return string
+     */
+    protected function getSalesOrderItemStateName(ItemTransfer $itemTransfer): string
+    {
+        $itemStateTransfer = $this->jellyfishCreditMemoRepository
+            ->findSalesOrderItemStateByIdSalesOrderItem($itemTransfer);
+
+        if ($itemStateTransfer === null) {
+            return '';
+        }
+
+        return $itemStateTransfer->getName();
     }
 
 }

@@ -3,17 +3,42 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper;
 
 use ArrayObject;
+use FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface;
 use Generated\Shared\Transfer\AddressTransfer;
 use Generated\Shared\Transfer\CreditMemoTransfer;
+use Generated\Shared\Transfer\CustomerTransfer;
 use Generated\Shared\Transfer\ItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoAddressTransfer;
+use Generated\Shared\Transfer\JellyfishCreditMemoCustomerTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoTransfer;
 use Generated\Shared\Transfer\JellyfishOrderAddressTransfer;
-use Orm\Zed\Sales\Persistence\SpySalesOrderAddress;
+use Generated\Shared\Transfer\OrderTransfer;
+use Spryker\Zed\Locale\Business\LocaleFacadeInterface;
+use Spryker\Zed\Sales\Business\SalesFacadeInterface;
 
 class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
 {
+    /**
+     * @var \FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface
+     */
+    protected $salesFacade;
+
+    /**
+     * @var \Spryker\Zed\Locale\Business\LocaleFacadeInterface
+     */
+    protected $localeFacade;
+
+    /**
+     * JellyfishCreditMemoMapper constructor.
+     *
+     * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface $salesFacade
+     */
+    public function __construct(JellyfishCreditMemoToSalesFacadeInterface $salesFacade)
+    {
+        $this->salesFacade = $salesFacade;
+    }
+
     /**
      * @param \FondOfSpryker\Zed\Jellyfish\Business\Model\Mapper\CreditMemoTransfer $creditMemoTransfer
      *
@@ -22,14 +47,21 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     public function mapCreditMemoTransferToJellyfishCreditMemoTransfer(
         CreditMemoTransfer $creditMemoTransfer
     ): JellyfishCreditMemoTransfer {
+        $orderTransfer = $this->salesFacade->findOrderByIdSalesOrder($creditMemoTransfer->getFkSalesOrder());
 
         $jellyfishCreditMemo = new JellyfishCreditMemoTransfer();
         $jellyfishCreditMemo->setId($creditMemoTransfer->getIdCreditMemo())
+            ->setOrderReference($creditMemoTransfer->getOrderReference())
             ->setFirstName($creditMemoTransfer->getFirstName())
             ->setLastName($creditMemoTransfer->getLastName())
             ->setEmail($creditMemoTransfer->getEmail())
-            ->setBillingAddress($this->mapAddressToJellyfishCreditMemoAddress($creditMemoTransfer->getAddress()))
-            ->setItems($this->getJellyfishCreditMemoItems($creditMemoTransfer->getItems()));
+            ->setCustomer($this->mapOrderTransferToJellyfishCreditMemoCustomerTransfer($orderTransfer))
+            ->setAddress($this->mapAddressToJellyfishCreditMemoAddress($creditMemoTransfer->getAddress()))
+            ->setItems($this->getJellyfishCreditMemoItems($creditMemoTransfer->getItems()))
+            ->setLocale($creditMemoTransfer->getLocale()->getLocaleName())
+            ->setStore($creditMemoTransfer->getStore())
+            ->setCreatedAt($creditMemoTransfer->getCreatedAt())
+            ->setUpdatedAt($creditMemoTransfer->getUpdatedAt());
 
         return $jellyfishCreditMemo;
     }
@@ -83,5 +115,19 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
         $jellyfishCreditMemoItemTransfer->setQuantity($itemTransfer->getQuantity());
 
         return $jellyfishCreditMemoItemTransfer;
+    }
+
+    /**
+     * @param \Generated\Shared\Transfer\OrderTransfer $orderTransfer
+     *
+     * @return \Generated\Shared\Transfer\JellyfishCreditMemoCustomerTransfer
+     */
+    protected function mapOrderTransferToJellyfishCreditMemoCustomerTransfer(
+        OrderTransfer $orderTransfer
+    ): JellyfishCreditMemoCustomerTransfer {
+        $jellyfishCreditMemoCustomerTransfer = new JellyfishCreditMemoCustomerTransfer();
+        $jellyfishCreditMemoCustomerTransfer->setEmail($orderTransfer->getCustomer()->getEmail());
+
+        return $jellyfishCreditMemoCustomerTransfer;
     }
 }

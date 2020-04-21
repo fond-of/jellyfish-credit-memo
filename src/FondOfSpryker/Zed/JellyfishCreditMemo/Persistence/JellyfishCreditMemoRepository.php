@@ -3,10 +3,16 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Persistence;
 
 use ArrayObject;
+use FondOfPHP\GoogleCustomSearch\Result\Item;
 use Generated\Shared\Transfer\CreditMemoCollectionTransfer;
 use Generated\Shared\Transfer\CreditMemoTransfer;
+use Generated\Shared\Transfer\FosCreditMemoEntityTransfer;
 use Generated\Shared\Transfer\FosCreditMemoItemEntityTransfer;
+use Generated\Shared\Transfer\ItemStateTransfer;
 use Generated\Shared\Transfer\ItemTransfer;
+use Generated\Shared\Transfer\LocaleTransfer;
+use Generated\Shared\Transfer\SpyOmsOrderItemStateEntityTransfer;
+use Generated\Shared\Transfer\SpySalesOrderItemEntityTransfer;
 use Orm\Zed\CreditMemo\Persistence\Map\FosCreditMemoAddressTableMap;
 use Orm\Zed\CreditMemo\Persistence\Map\FosCreditMemoTableMap;
 use Propel\Runtime\ActiveQuery\Criteria;
@@ -31,11 +37,35 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
             ->createCreditMemoQuery()
             ->leftJoinWithAddress()
             ->leftJoinWithFosCreditMemoItem()
+            ->leftJoinWithSpyLocale()
             ->filterByJellyfishExportState(static::JELLYFISH_PENDING_EXPORT_STATE);
 
         $entityTransferCollection = $this->buildQueryFromCriteria($query)->find();
 
         return $this->mapCreditMemoEntityTransferCollectionToCreditMemoCollectionTransfer($entityTransferCollection);
+    }
+
+    /**
+     * @param \Generated\Shared\Transfer\ItemTransfer $itemTransfer
+     * @return \Generated\Shared\Transfer\ItemStateTransfer|null
+     * 
+     * @throws \Spryker\Zed\Propel\Business\Exception\AmbiguousComparisonException
+     */
+    public function findSalesOrderItemStateByIdSalesOrderItem(ItemTransfer $itemTransfer): ?ItemStateTransfer
+    {
+        $query = $this->getFactory()
+            ->getSalesOrderItemQuery()
+            ->leftJoinWithState()
+            ->filterByIdSalesOrderItem($itemTransfer->getFkSalesOrderItem());
+
+        /** @var SpySalesOrderItemEntityTransfer $salesOrderItemEntityTransfer*/
+        $salesOrderItemEntityTransfer = $this->buildQueryFromCriteria($query)->findOne();
+
+        if ($salesOrderItemEntityTransfer === null) {
+            return null;
+        }
+
+        return $this->mapSpySalesOrderItemEntityTransferToItemStateTransfer($salesOrderItemEntityTransfer);
     }
 
     /**
@@ -54,6 +84,7 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
             $creditMemoTransfer = (new CreditMemoTransfer())
                 ->fromArray($creditMemoEntityTransfer->toArray(), true);
 
+            $creditMemoTransfer->setLocale($this->mapCreditMemoEntityTransferToLocaleTransfer($creditMemoEntityTransfer));
             $creditMemoTransfer->setItems(
                 $this->getCreditMemoItems($creditMemoEntityTransfer->getFosCreditMemoItems())
             );
@@ -89,16 +120,45 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
     protected function mapCreditMemoItemEntityTransferToItemTransfer(
         FosCreditMemoItemEntityTransfer $fosCreditMemoItemEntityTransfer
     ): ItemTransfer {
-
         $itemTransfer = new ItemTransfer();
         $itemTransfer->setName($fosCreditMemoItemEntityTransfer->getName());
         $itemTransfer->setSku($fosCreditMemoItemEntityTransfer->getSku());
         $itemTransfer->setQuantity($fosCreditMemoItemEntityTransfer->getQuantity());
         $itemTransfer->setFkCreditMemo($fosCreditMemoItemEntityTransfer->getFkCreditMemo());
         $itemTransfer->setIdCreditMemoItem($fosCreditMemoItemEntityTransfer->getIdCreditMemoItem());
+        $itemTransfer->setFkSalesOrderItem($fosCreditMemoItemEntityTransfer->getFkSalesOrderItem());
 
         return $itemTransfer;
     }
 
+    /**
+     * @param \Generated\Shared\Transfer\SpySalesOrderItemEntityTransfer $spySalesOrderItemEntityTransfer
+     *
+     * @return \Generated\Shared\Transfer\ItemStateTransfer
+     */
+    protected function mapSpySalesOrderItemEntityTransferToItemStateTransfer(
+        SpySalesOrderItemEntityTransfer $spySalesOrderItemEntityTransfer
+    ): ItemStateTransfer {
+        $itemStateTransfer = new ItemStateTransfer();
+        $itemStateTransfer->setName($spySalesOrderItemEntityTransfer->getState()->getName());
+        $itemStateTransfer->setIdSalesOrder($spySalesOrderItemEntityTransfer->getFkSalesOrder());
+
+        return $itemStateTransfer;
+    }
+
+    /**
+     * @param \Generated\Shared\Transfer\FosCreditMemoEntityTransfer $creditMemoEntityTransfer
+     *
+     * @return \Generated\Shared\Transfer\LocaleTransfer
+     */
+    protected function mapCreditMemoEntityTransferToLocaleTransfer(
+        FosCreditMemoEntityTransfer $creditMemoEntityTransfer
+    ): LocaleTransfer {
+        $localeTransfer = new LocaleTransfer();
+        $localeTransfer->setIdLocale($creditMemoEntityTransfer->getFkLocale());
+        $localeTransfer->setLocaleName($creditMemoEntityTransfer->getSpyLocale()->getLocaleName());
+
+        return $localeTransfer;
+    }
 
 }
