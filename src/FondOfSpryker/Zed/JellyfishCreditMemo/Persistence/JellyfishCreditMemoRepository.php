@@ -25,6 +25,8 @@ use Spryker\Zed\Kernel\Persistence\AbstractRepository;
 class JellyfishCreditMemoRepository extends AbstractRepository implements JellyfishCreditMemoRepositoryInterface
 {
     protected const JELLYFISH_PENDING_EXPORT_STATE = null;
+    protected const FIELD_CREATED_AT = 'created_at';
+    protected const FIELD_UPDATED_AT = 'updated_at';
 
     /**
      * @return \Generated\Shared\Transfer\CreditMemoCollectionTransfer
@@ -88,6 +90,16 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
             $creditMemoTransfer->setItems(
                 $this->getCreditMemoItems($creditMemoEntityTransfer->getFosCreditMemoItems())
             );
+
+            $virtualPropertiesCollection = $creditMemoEntityTransfer->virtualProperties();
+
+            if (isset($virtualPropertiesCollection[static::FIELD_CREATED_AT])) {
+                $creditMemoTransfer->setCreatedAt($virtualPropertiesCollection[static::FIELD_CREATED_AT]);
+            }
+
+            if (isset($virtualPropertiesCollection[static::FIELD_UPDATED_AT])) {
+                $creditMemoTransfer->setUpdatedAt($virtualPropertiesCollection[static::FIELD_UPDATED_AT]);
+            }
 
             $creditMemoEntityCollectionTransfer->addCreditMemo($creditMemoTransfer);
         }

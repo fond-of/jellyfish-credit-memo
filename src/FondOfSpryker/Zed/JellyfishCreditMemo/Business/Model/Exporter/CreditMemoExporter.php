@@ -95,7 +95,7 @@ class CreditMemoExporter implements CreditMemoExporterInterface
                 
                 $jellyfishCreditMemo->setExportState(static::CREDIT_MEMO_EXPORT_STATE_COMPLETE);
                 $this->jellyfishCreditMemoEntityManager->updateExportState($jellyfishCreditMemo);
-                throw new \Exception($jellyfishCreditMemo->serialize());
+
             }
 
         } catch (\Exception $exception) {

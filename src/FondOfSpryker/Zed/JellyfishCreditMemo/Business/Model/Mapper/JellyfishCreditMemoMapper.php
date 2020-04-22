@@ -51,6 +51,8 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
 
         $jellyfishCreditMemo = new JellyfishCreditMemoTransfer();
         $jellyfishCreditMemo->setId($creditMemoTransfer->getIdCreditMemo())
+            ->setSystemCode($this->getSystemCode($creditMemoTransfer))
+            ->setExternalReference('')
             ->setOrderReference($creditMemoTransfer->getOrderReference())
             ->setFirstName($creditMemoTransfer->getFirstName())
             ->setLastName($creditMemoTransfer->getLastName())
@@ -60,8 +62,8 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
             ->setItems($this->getJellyfishCreditMemoItems($creditMemoTransfer->getItems()))
             ->setLocale($creditMemoTransfer->getLocale()->getLocaleName())
             ->setStore($creditMemoTransfer->getStore())
-            ->setCreatedAt($creditMemoTransfer->getCreatedAt())
-            ->setUpdatedAt($creditMemoTransfer->getUpdatedAt());
+            ->setCreatedAt(date('Y-m-d H:i:s', strtotime($creditMemoTransfer->getCreatedAt())))
+            ->setUpdatedAt(date('Y-m-d H:i:s', strtotime($creditMemoTransfer->getUpdatedAt())));
 
         return $jellyfishCreditMemo;
     }
@@ -129,5 +131,19 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
         $jellyfishCreditMemoCustomerTransfer->setEmail($orderTransfer->getCustomer()->getEmail());
 
         return $jellyfishCreditMemoCustomerTransfer;
+    }
+
+    /**
+     * @param \Generated\Shared\Transfer\CreditMemoTransfer $creditMemoTransfer
+     *
+     * @return string
+     */
+    protected function getSystemCode(CreditMemoTransfer $creditMemoTransfer): string
+    {
+        if ($creditMemoTransfer->getStore() === null) {
+            return '';
+        }
+
+        return substr($creditMemoTransfer->getStore(), 0, strpos($creditMemoTransfer->getStore(), '_'));
     }
 }

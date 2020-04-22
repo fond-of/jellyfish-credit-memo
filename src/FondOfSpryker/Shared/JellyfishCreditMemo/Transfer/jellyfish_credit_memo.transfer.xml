@@ -6,6 +6,8 @@
     <transfer name="JellyfishCreditMemo">
         <property name="id" type="int"/>
         <property name="orderReference" type="string"/>
+        <property name="externalReference" type="string"/>
+        <property name="externalOrderReference" type="string"/>
         <property name="customerReference" type="string"/>
         <property name="creditMemoReference" type="string"/>
         <property name="customer" type="JellyfishCreditMemoCustomer" />
@@ -19,6 +21,7 @@
         <property name="exportState" type="string"/>
         <property name="createdAt" type="string"/>
         <property name="updatedAt" type="string"/>
+        <property name="systemCode" type="string"/>
     </transfer>
 
     <transfer name="JellyfishCreditMemoAddress">
