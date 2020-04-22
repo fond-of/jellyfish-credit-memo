@@ -24,7 +24,7 @@ class CreditMemoExporter implements CreditMemoExporterInterface
     protected const CREDIT_MEMO_EXPORT_STATE_COMPLETE = 'complete';
 
     /**
-     * @var \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface 
+     * @var \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface
      */
     protected $adapter;
 
@@ -55,6 +55,7 @@ class CreditMemoExporter implements CreditMemoExporterInterface
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoRepositoryInterface $jellyfishCreditMemoRepository
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoConfig $jellyfishCreditMemoConfig
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManagerInterface $jellyfishCreditMemoEntityManager
+     * @param \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface $adapter
      */
     public function __construct(
         JellyfishCreditMemoMapperInterface $jellyfishCreditMemoMapper,
@@ -72,6 +73,8 @@ class CreditMemoExporter implements CreditMemoExporterInterface
     }
 
     /**
+     * Export data
+     * 
      * @throws \Exception
      */
     public function export(): void

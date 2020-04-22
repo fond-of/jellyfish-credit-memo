@@ -14,7 +14,6 @@ use Generated\Shared\Transfer\JellyfishCreditMemoItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoTransfer;
 use Generated\Shared\Transfer\JellyfishOrderAddressTransfer;
 use Generated\Shared\Transfer\OrderTransfer;
-use Spryker\Zed\Locale\Business\LocaleFacadeInterface;
 use Spryker\Zed\Sales\Business\SalesFacadeInterface;
 
 class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
@@ -23,11 +22,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
      * @var \FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface
      */
     protected $salesFacade;
-
-    /**
-     * @var \Spryker\Zed\Locale\Business\LocaleFacadeInterface
-     */
-    protected $localeFacade;
 
     /**
      * JellyfishCreditMemoMapper constructor.
@@ -78,7 +72,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     ): JellyfishCreditMemoAddressTransfer {
 
         $jellyfishCreditMemoAddress = new JellyfishCreditMemoAddressTransfer();
-
         $jellyfishCreditMemoAddress->fromArray($addressTransfer->toArray(), true);
 
         return $jellyfishCreditMemoAddress;
@@ -86,6 +79,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
 
     /**
      * @param \ArrayObject|\Generated\Shared\Transfer\ItemTransfer[] $items
+     *
      * @return \ArrayObject|\Generated\Shared\Transfer\JellyfishCreditMemoItemTransfer[]
      */
     protected function getJellyfishCreditMemoItems(ArrayObject $items): ArrayObject
@@ -105,6 +99,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
 
     /**
      * @param \Generated\Shared\Transfer\ItemTransfer $itemTransfer
+     *
      * @return \Generated\Shared\Transfer\JellyfishCreditMemoTransfer
      */
     protected function mapItemTransferToJellyfishCreditMemoItem(

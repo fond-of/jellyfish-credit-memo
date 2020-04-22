@@ -20,13 +20,15 @@ use Spryker\Zed\Oms\Business\OmsFacade;
 
 /**
  * @method \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoRepository getRepository()
- * * @method \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManager getEntityManager()
+ * @method \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManager getEntityManager()
  * @method \FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoConfig getConfig()
  */
 class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 {
     /**
      * @return \FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Exporter\CreditMemoExporterInterface
+     * 
+     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     public function createCreditMemoExporter(): CreditMemoExporterInterface
     {
@@ -41,6 +43,8 @@ class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 
     /**
      * @return \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface
+     *
+     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     protected function createCreditMemoAdapter(): AdapterInterface
     {
@@ -64,18 +68,18 @@ class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 
     /**
      * @return \FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper\JellyfishCreditMemoMapperInterface
+     *
+     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     protected function createJellyfishCreditMemoMapper(): JellyfishCreditMemoMapperInterface
     {
-        return new JellyfishCreditMemoMapper(
-            $this->getSalesFacade()
-        );
+        return new JellyfishCreditMemoMapper($this->getSalesFacade());
     }
 
     /**
-     * @throws
-     *
      * @return \FondOfSpryker\Zed\Jellyfish\Dependency\Service\JellyfishToUtilEncodingServiceInterface
+     *
+     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     protected function getUtilEncodingService(): JellyfishToUtilEncodingServiceInterface
     {
