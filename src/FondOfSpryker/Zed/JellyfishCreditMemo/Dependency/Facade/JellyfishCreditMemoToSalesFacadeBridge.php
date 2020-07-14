@@ -8,13 +8,11 @@ use Spryker\Zed\Sales\Business\SalesFacadeInterface;
 class JellyfishCreditMemoToSalesFacadeBridge implements JellyfishCreditMemoToSalesFacadeInterface
 {
     /**
-     * @var \Spryker\Zed\Sales\Business\SalesFacadeInterface 
+     * @var \Spryker\Zed\Sales\Business\SalesFacadeInterface
      */
     protected $salesFacade;
 
     /**
-     * JellyfishCreditMemoToSalesFacadeBridge constructor.
-     *
      * @param \Spryker\Zed\Sales\Business\SalesFacadeInterface $salesFacade
      */
     public function __construct(SalesFacadeInterface $salesFacade)

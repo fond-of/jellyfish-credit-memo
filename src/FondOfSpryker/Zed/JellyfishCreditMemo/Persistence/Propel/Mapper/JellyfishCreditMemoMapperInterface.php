@@ -4,7 +4,6 @@ namespace FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\Propel\Mapper;
 
 use Generated\Shared\Transfer\CompanyBusinessUnitTransfer;
 use Generated\Shared\Transfer\SpyCompanyBusinessUnitEntityTransfer;
-use Orm\Zed\CompanyBusinessUnit\Persistence\SpyCompanyBusinessUnit;
 
 interface JellyfishCreditMemoMapperInterface
 {
@@ -18,5 +17,4 @@ interface JellyfishCreditMemoMapperInterface
         SpyCompanyBusinessUnitEntityTransfer $businessUnitEntityTransfer,
         CompanyBusinessUnitTransfer $businessUnitTransfer
     ): CompanyBusinessUnitTransfer;
-
 }

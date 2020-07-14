@@ -4,8 +4,6 @@ namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business;
 
 use FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface;
 use FondOfSpryker\Zed\Jellyfish\Dependency\Service\JellyfishToUtilEncodingServiceInterface;
-use FondOfSpryker\Zed\JellyfishB2B\Business\Api\Adapter\CompanyUserAdapter;
-use FondOfSpryker\Zed\JellyfishB2B\JellyfishB2BDependencyProvider;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Business\Api\Adapter\CreditMemoAdapter;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Exporter\CreditMemoExporter;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Exporter\CreditMemoExporterInterface;
@@ -16,7 +14,6 @@ use FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoDependencyProvider;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\ClientInterface as HttpClientInterface;
 use Spryker\Zed\Kernel\Business\AbstractBusinessFactory;
-use Spryker\Zed\Oms\Business\OmsFacade;
 
 /**
  * @method \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoRepository getRepository()
@@ -27,8 +24,6 @@ class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 {
     /**
      * @return \FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Exporter\CreditMemoExporterInterface
-     * 
-     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     public function createCreditMemoExporter(): CreditMemoExporterInterface
     {
@@ -43,8 +38,6 @@ class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 
     /**
      * @return \FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface
-     *
-     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     protected function createCreditMemoAdapter(): AdapterInterface
     {
@@ -68,8 +61,6 @@ class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 
     /**
      * @return \FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper\JellyfishCreditMemoMapperInterface
-     *
-     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     protected function createJellyfishCreditMemoMapper(): JellyfishCreditMemoMapperInterface
     {
@@ -78,8 +69,6 @@ class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 
     /**
      * @return \FondOfSpryker\Zed\Jellyfish\Dependency\Service\JellyfishToUtilEncodingServiceInterface
-     *
-     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     protected function getUtilEncodingService(): JellyfishToUtilEncodingServiceInterface
     {
@@ -88,8 +77,6 @@ class JellyfishCreditMemoBusinessFactory extends AbstractBusinessFactory
 
     /**
      * @return \FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface
-     *
-     * @throws \Spryker\Zed\Kernel\Exception\Container\ContainerKeyNotFoundException
      */
     protected function getSalesFacade(): JellyfishCreditMemoToSalesFacadeInterface
     {

@@ -8,3 +8,19 @@
 ```
 composer require fond-of-spryker/jellyfish-credit-memo
 ```
+
+## Configuration
+
+Inject JellyfishCreditMemo command and condition into OMS. Add in config_default.php
+
+```
+$config[KernelConstants::DEPENDENCY_INJECTOR_ZED] = [
+    'Payment' => [
+        ...
+    ],
+    'Oms' => [
+        ...
+        'JellyfishCreditMemo',
+    ],
+];
+```

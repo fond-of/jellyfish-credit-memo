@@ -5,7 +5,6 @@ namespace FondOfSpryker\Zed\JellyfishCreditMemo;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeBridge;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Service\JellyfishCreditMemoToUtilEncodingServiceBridge;
 use Orm\Zed\Sales\Persistence\SpySalesOrderItemQuery;
-use Orm\Zed\Sales\Persistence\SpySalesOrderQuery;
 use Spryker\Zed\Kernel\AbstractBundleDependencyProvider;
 use Spryker\Zed\Kernel\Container;
 

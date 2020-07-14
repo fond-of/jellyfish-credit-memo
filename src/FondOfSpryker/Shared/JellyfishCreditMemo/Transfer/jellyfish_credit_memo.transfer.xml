@@ -22,6 +22,16 @@
         <property name="createdAt" type="string"/>
         <property name="updatedAt" type="string"/>
         <property name="systemCode" type="string"/>
+        <property name="salesPaymentMethodType" type="SalesPaymentMethodType" />
+        <property name="processed" type="int" />
+        <property name="processedAt" type="string" />
+        <property name="inProgress" type="bool" />
+        <property name="refundedAmount" type="int" />
+        <property name="wasRefundSuccessful" type="bool" />
+        <property name="state" type="int" />
+        <property name="errorMessage" type="string" />
+        <property name="errorCode" type="int" />
+        <property name="transactionId" type="string" />
     </transfer>
 
     <transfer name="JellyfishCreditMemoAddress">
@@ -42,9 +52,11 @@
     </transfer>
 
     <transfer name="JellyfishCreditMemoItem">
+        <property name="fkSalesOrderItem" type="int" />
         <property name="name" type="string"/>
         <property name="quantity" type="string"/>
         <property name="sku" type="string"/>
+        <property name="refunded" type="bool" />
     </transfer>
 
     <transfer name="JellyfishCreditMemoCustomer">

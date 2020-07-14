@@ -2,9 +2,7 @@
 
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Persistence;
 
-use FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoEntityManagerInterface;
 use Generated\Shared\Transfer\JellyfishCreditMemoTransfer;
-use Orm\Zed\CreditMemo\Persistence\Map\FosCreditMemoTableMap;
 use Spryker\Zed\Kernel\Persistence\AbstractEntityManager;
 
 /**

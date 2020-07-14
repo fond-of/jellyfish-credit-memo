@@ -1,14 +1,15 @@
 <?php
+
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Communication\Console;
 
 use Spryker\Zed\Kernel\Communication\Console\Console;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @method \FondOfSpryker\Zed\JellyfishCreditMemo\Business\JellyfishCreditMemoFacadeInterface getFacade()
+ * @method \FondOfSpryker\Zed\JellyfishCreditMemo\Persistence\JellyfishCreditMemoRepositoryInterface getRepository()
+ * @method \FondOfSpryker\Zed\JellyfishCreditMemo\Communication\JellyfishCreditMemoCommunicationFactory getFactory()
  */
 class JellyfishCreditMemoConsole extends Console
 {

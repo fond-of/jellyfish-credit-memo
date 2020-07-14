@@ -3,20 +3,15 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Persistence;
 
 use ArrayObject;
-use FondOfPHP\GoogleCustomSearch\Result\Item;
+use Generated\Shared\Transfer\AddressTransfer;
 use Generated\Shared\Transfer\CreditMemoCollectionTransfer;
 use Generated\Shared\Transfer\CreditMemoTransfer;
-use Generated\Shared\Transfer\FosCreditMemoEntityTransfer;
-use Generated\Shared\Transfer\FosCreditMemoItemEntityTransfer;
 use Generated\Shared\Transfer\ItemStateTransfer;
 use Generated\Shared\Transfer\ItemTransfer;
 use Generated\Shared\Transfer\LocaleTransfer;
-use Generated\Shared\Transfer\SpyOmsOrderItemStateEntityTransfer;
 use Generated\Shared\Transfer\SpySalesOrderItemEntityTransfer;
-use Orm\Zed\CreditMemo\Persistence\Map\FosCreditMemoAddressTableMap;
-use Orm\Zed\CreditMemo\Persistence\Map\FosCreditMemoTableMap;
-use Propel\Runtime\ActiveQuery\Criteria;
-use Propel\Runtime\Collection\ObjectCollection;
+use Orm\Zed\CreditMemo\Persistence\FosCreditMemo;
+use Orm\Zed\CreditMemo\Persistence\FosCreditMemoItem;
 use Spryker\Zed\Kernel\Persistence\AbstractRepository;
 
 /**
@@ -30,8 +25,6 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
 
     /**
      * @return \Generated\Shared\Transfer\CreditMemoCollectionTransfer
-     * 
-     * @throws \Spryker\Zed\Propel\Business\Exception\AmbiguousComparisonException
      */
     public function findPendingCreditMemoCollection(): CreditMemoCollectionTransfer
     {
@@ -48,10 +41,74 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
     }
 
     /**
+     * @param int $salesOrderId
+     * @param array $salesOrderItemIds
+     *
+     * @return \Generated\Shared\Transfer\CreditMemoTransfer|null
+     */
+    public function findCreditMemoBySalesOrderIdAndSalesOrderItemIds(
+        int $salesOrderId,
+        array $salesOrderItemIds
+    ): ?CreditMemoTransfer {
+        $query = $this->getFactory()
+            ->createCreditMemoQuery()
+            ->useFosCreditMemoItemQuery()->filterByFkSalesOrderItem_In($salesOrderItemIds)
+            ->endUse()
+            ->filterByFkSalesOrder($salesOrderId);
+
+        $results = $query->find();
+
+        if ($results === null || $results->getData() === null || $results->getData() === []) {
+            return null;
+        }
+
+        /** @var \Orm\Zed\CreditMemo\Persistence\FosCreditMemo $fosCreditMemo */
+        foreach ($results->getData() as $fosCreditMemo) {
+            $items = $fosCreditMemo->getFosCreditMemoItems();
+            if (count($items) === count($salesOrderItemIds)) {
+                $found = true;
+                foreach ($items as $creditMemoItem) {
+                    if (in_array($creditMemoItem->getFkSalesOrderItem(), $salesOrderItemIds) === false) {
+                        $found = false;
+
+                        break;
+                    }
+                }
+                if ($found === true) {
+                    return $this->mapCreditMemoEntityToCreditMemoTransfer($fosCreditMemo);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param int $idSalesOrderItem
+     *
+     * @return \Generated\Shared\Transfer\CreditMemoTransfer|null
+     */
+    public function findCreditMemoBySalesOrderItemId(int $idSalesOrderItem): ?CreditMemoTransfer
+    {
+        $item = $this->getFactory()->createCreditMemoQuery()->useFosCreditMemoItemQuery()->findOneByFkSalesOrderItem($idSalesOrderItem);
+
+        if ($item === null) {
+            return null;
+        }
+
+        $fosCreditMemo = $this->getFactory()->createCreditMemoQuery()->findOneByIdCreditMemo($item->getFkCreditMemo());
+
+        if ($fosCreditMemo === null) {
+            return null;
+        }
+
+        return $this->mapCreditMemoEntityToCreditMemoTransfer($fosCreditMemo);
+    }
+
+    /**
      * @param \Generated\Shared\Transfer\ItemTransfer $itemTransfer
+     *
      * @return \Generated\Shared\Transfer\ItemStateTransfer|null
-     * 
-     * @throws \Spryker\Zed\Propel\Business\Exception\AmbiguousComparisonException
      */
     public function findSalesOrderItemStateByIdSalesOrderItem(ItemTransfer $itemTransfer): ?ItemStateTransfer
     {
@@ -60,7 +117,7 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
             ->leftJoinWithState()
             ->filterByIdSalesOrderItem($itemTransfer->getFkSalesOrderItem());
 
-        /** @var SpySalesOrderItemEntityTransfer $salesOrderItemEntityTransfer*/
+        /** @var \Generated\Shared\Transfer\SpySalesOrderItemEntityTransfer $salesOrderItemEntityTransfer */
         $salesOrderItemEntityTransfer = $this->buildQueryFromCriteria($query)->findOne();
 
         if ($salesOrderItemEntityTransfer === null) {
@@ -71,46 +128,28 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
     }
 
     /**
-     * @param  \Generated\Shared\Transfer\FosCreditMemoItemEntityTransfer $entityTransferCollection
+     * @param \Generated\Shared\Transfer\FosCreditMemoItemEntityTransfer|array $entityTransferCollection
+     *
      * @return \Generated\Shared\Transfer\CreditMemoCollectionTransfer
      */
-    protected function mapCreditMemoEntityTransferCollectionToCreditMemoCollectionTransfer (
+    protected function mapCreditMemoEntityTransferCollectionToCreditMemoCollectionTransfer(
         array $entityTransferCollection
-    ): CreditMemoCollectionTransfer{
-
+    ): CreditMemoCollectionTransfer {
         $creditMemoEntityCollectionTransfer = new CreditMemoCollectionTransfer();
 
-        foreach ($entityTransferCollection as $creditMemoEntityTransfer)
-        {
-            /** @var \Generated\Shared\Transfer\FosCreditMemoEntityTransfer $creditMemoEntityTransfer*/
-            $creditMemoTransfer = (new CreditMemoTransfer())
-                ->fromArray($creditMemoEntityTransfer->toArray(), true);
-
-            $creditMemoTransfer->setLocale($this->mapCreditMemoEntityTransferToLocaleTransfer($creditMemoEntityTransfer));
-            $creditMemoTransfer->setItems(
-                $this->getCreditMemoItems($creditMemoEntityTransfer->getFosCreditMemoItems())
-            );
-
-            $virtualPropertiesCollection = $creditMemoEntityTransfer->virtualProperties();
-
-            if (isset($virtualPropertiesCollection[static::FIELD_CREATED_AT])) {
-                $creditMemoTransfer->setCreatedAt($virtualPropertiesCollection[static::FIELD_CREATED_AT]);
-            }
-
-            if (isset($virtualPropertiesCollection[static::FIELD_UPDATED_AT])) {
-                $creditMemoTransfer->setUpdatedAt($virtualPropertiesCollection[static::FIELD_UPDATED_AT]);
-            }
+        foreach ($entityTransferCollection as $creditMemoEntityTransfer) {
+            $creditMemoTransfer = $this->mapCreditMemoEntityToCreditMemoTransfer($creditMemoEntityTransfer);
 
             $creditMemoEntityCollectionTransfer->addCreditMemo($creditMemoTransfer);
         }
-        
+
         return $creditMemoEntityCollectionTransfer;
     }
 
     /**
      * @param $creditMemoItemEntityTransferCollection
      *
-     * @return \Generated\Shared\Transfer\FosCreditMemoItemEntityTransfer[]|ArrayObject
+     * @return \Generated\Shared\Transfer\FosCreditMemoItemEntityTransfer[]|\ArrayObject
      */
     protected function getCreditMemoItems($creditMemoItemEntityTransferCollection): ArrayObject
     {
@@ -125,12 +164,12 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
     }
 
     /**
-     * @param \Generated\Shared\Transfer\FosCreditMemoItemEntityTransfer $fosCreditMemoItemEntityTransfer
+     * @param \Orm\Zed\CreditMemo\Persistence\FosCreditMemoItem $fosCreditMemoItemEntityTransfer
      *
      * @return \Generated\Shared\Transfer\ItemTransfer
      */
     protected function mapCreditMemoItemEntityTransferToItemTransfer(
-        FosCreditMemoItemEntityTransfer $fosCreditMemoItemEntityTransfer
+        FosCreditMemoItem $fosCreditMemoItemEntityTransfer
     ): ItemTransfer {
         $itemTransfer = new ItemTransfer();
         $itemTransfer->setName($fosCreditMemoItemEntityTransfer->getName());
@@ -159,18 +198,87 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
     }
 
     /**
-     * @param \Generated\Shared\Transfer\FosCreditMemoEntityTransfer $creditMemoEntityTransfer
+     * @param \Orm\Zed\CreditMemo\Persistence\FosCreditMemo $creditMemoEntityTransfer
      *
      * @return \Generated\Shared\Transfer\LocaleTransfer
      */
     protected function mapCreditMemoEntityTransferToLocaleTransfer(
-        FosCreditMemoEntityTransfer $creditMemoEntityTransfer
+        FosCreditMemo $creditMemoEntityTransfer
     ): LocaleTransfer {
         $localeTransfer = new LocaleTransfer();
-        $localeTransfer->setIdLocale($creditMemoEntityTransfer->getFkLocale());
-        $localeTransfer->setLocaleName($creditMemoEntityTransfer->getSpyLocale()->getLocaleName());
+
+        $spyLocale = $creditMemoEntityTransfer->getSpyLocale();
+
+        if ($spyLocale !== null) {
+            $localeTransfer->fromArray($spyLocale->toArray(), true);
+        }
 
         return $localeTransfer;
     }
 
+    /**
+     * @param \Orm\Zed\CreditMemo\Persistence\FosCreditMemo $creditMemoEntityTransfer
+     *
+     * @return \Generated\Shared\Transfer\AddressTransfer
+     */
+    protected function mapCreditMemoToAddressTransfer(
+        FosCreditMemo $creditMemoEntityTransfer
+    ): AddressTransfer {
+        $addressTransfer = new AddressTransfer();
+
+        $fosCreditMemoAddress = $creditMemoEntityTransfer->getAddress();
+
+        if ($fosCreditMemoAddress !== null) {
+            $addressTransfer->fromArray($fosCreditMemoAddress->toArray(), true);
+        }
+
+        return $addressTransfer;
+    }
+
+    /**
+     * @param \Orm\Zed\CreditMemo\Persistence\FosCreditMemoItem[] $creditMemoItems
+     *
+     * @return \ArrayObject|\Generated\Shared\Transfer\ItemTransfer[]
+     */
+    protected function mapCreditMemoItemsToItemTransferCollection(
+        array $creditMemoItems
+    ): ArrayObject {
+        $collection = new ArrayObject();
+
+        foreach ($creditMemoItems as $creditMemoItem) {
+            $itemTransfer = new ItemTransfer();
+            $itemTransfer->fromArray($creditMemoItem->toArray(), true);
+            $collection->append($itemTransfer);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * @param \Orm\Zed\CreditMemo\Persistence\FosCreditMemo $creditMemoEntityTransfer
+     *
+     * @return \Generated\Shared\Transfer\CreditMemoTransfer
+     */
+    protected function mapCreditMemoEntityToCreditMemoTransfer(FosCreditMemo $creditMemoEntityTransfer): CreditMemoTransfer
+    {
+        $creditMemoTransfer = (new CreditMemoTransfer())
+            ->fromArray($creditMemoEntityTransfer->toArray(), true);
+
+        $creditMemoTransfer->setLocale($this->mapCreditMemoEntityTransferToLocaleTransfer($creditMemoEntityTransfer));
+        $creditMemoTransfer->setAddress($this->mapCreditMemoToAddressTransfer($creditMemoEntityTransfer));
+        $creditMemoTransfer->setItems(
+            $this->getCreditMemoItems($creditMemoEntityTransfer->getFosCreditMemoItems())
+        );
+
+//        $virtualPropertiesCollection = $creditMemoEntityTransfer->virtualProperties();
+//
+//        if (isset($virtualPropertiesCollection[static::FIELD_CREATED_AT])) {
+//            $creditMemoTransfer->setCreatedAt($virtualPropertiesCollection[static::FIELD_CREATED_AT]);
+//        }
+//
+//        if (isset($virtualPropertiesCollection[static::FIELD_UPDATED_AT])) {
+//            $creditMemoTransfer->setUpdatedAt($virtualPropertiesCollection[static::FIELD_UPDATED_AT]);
+//        }
+        return $creditMemoTransfer;
+    }
 }

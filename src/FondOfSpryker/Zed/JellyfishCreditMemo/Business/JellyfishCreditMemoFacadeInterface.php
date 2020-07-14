@@ -9,4 +9,9 @@ interface JellyfishCreditMemoFacadeInterface
      */
     public function exportCreditMemos(): void;
 
+    /**
+     * @param int $salesOderId
+     * @param int[] $salesOrderItemIds
+     */
+    public function exportCreditMemo(int $salesOderId, array $salesOrderItemIds): void;
 }

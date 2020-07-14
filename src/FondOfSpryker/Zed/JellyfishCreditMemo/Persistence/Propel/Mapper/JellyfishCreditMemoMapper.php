@@ -6,7 +6,6 @@ use Generated\Shared\Transfer\CompanyBusinessUnitTransfer;
 use Generated\Shared\Transfer\CompanyTransfer;
 use Generated\Shared\Transfer\SpyCompanyBusinessUnitEntityTransfer;
 use Orm\Zed\Company\Persistence\SpyCompany;
-use Orm\Zed\CompanyBusinessUnit\Persistence\SpyCompanyBusinessUnit;
 
 class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
 {
@@ -27,7 +26,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
 
         return $businessUnitTransfer;
     }
-
 
     /**
      * @param \Orm\Zed\Company\Persistence\SpyCompany $companyEntity

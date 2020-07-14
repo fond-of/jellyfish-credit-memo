@@ -3,18 +3,16 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper;
 
 use ArrayObject;
+use FondOfSpryker\Shared\CreditMemo\CreditMemoConstants;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface;
 use Generated\Shared\Transfer\AddressTransfer;
 use Generated\Shared\Transfer\CreditMemoTransfer;
-use Generated\Shared\Transfer\CustomerTransfer;
 use Generated\Shared\Transfer\ItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoAddressTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoCustomerTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoTransfer;
-use Generated\Shared\Transfer\JellyfishOrderAddressTransfer;
 use Generated\Shared\Transfer\OrderTransfer;
-use Spryker\Zed\Sales\Business\SalesFacadeInterface;
 
 class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
 {
@@ -24,8 +22,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     protected $salesFacade;
 
     /**
-     * JellyfishCreditMemoMapper constructor.
-     *
      * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface $salesFacade
      */
     public function __construct(JellyfishCreditMemoToSalesFacadeInterface $salesFacade)
@@ -34,9 +30,9 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     }
 
     /**
-     * @param \FondOfSpryker\Zed\Jellyfish\Business\Model\Mapper\CreditMemoTransfer $creditMemoTransfer
+     * @param \Generated\Shared\Transfer\CreditMemoTransfer $creditMemoTransfer
      *
-     * @return \FondOfSpryker\Zed\Jellyfish\Business\Model\Mapper\JellyfishCreditMemoTransfer
+     * @return \Generated\Shared\Transfer\JellyfishCreditMemoTransfer
      */
     public function mapCreditMemoTransferToJellyfishCreditMemoTransfer(
         CreditMemoTransfer $creditMemoTransfer
@@ -47,6 +43,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
         $jellyfishCreditMemo->setId($creditMemoTransfer->getIdCreditMemo())
             ->setSystemCode($this->getSystemCode($creditMemoTransfer))
             ->setExternalReference('')
+            ->setCreditMemoReference($creditMemoTransfer->getCreditMemoReference())
             ->setOrderReference($creditMemoTransfer->getOrderReference())
             ->setFirstName($creditMemoTransfer->getFirstName())
             ->setLastName($creditMemoTransfer->getLastName())
@@ -56,10 +53,39 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
             ->setItems($this->getJellyfishCreditMemoItems($creditMemoTransfer->getItems()))
             ->setLocale($creditMemoTransfer->getLocale()->getLocaleName())
             ->setStore($creditMemoTransfer->getStore())
-            ->setCreatedAt(date('Y-m-d H:i:s', strtotime($creditMemoTransfer->getCreatedAt())))
-            ->setUpdatedAt(date('Y-m-d H:i:s', strtotime($creditMemoTransfer->getUpdatedAt())));
+            ->setCreatedAt($this->convertDate($creditMemoTransfer->getCreatedAt()))
+            ->setUpdatedAt($this->convertDate($creditMemoTransfer->getUpdatedAt()))
+            ->setTransactionId($creditMemoTransfer->getTransactionId())
+            ->setErrorMessage($creditMemoTransfer->getErrorMessage())
+            ->setErrorCode($creditMemoTransfer->getErrorCode())
+            ->setInProgress($creditMemoTransfer->getInProgress())
+            ->setProcessed($creditMemoTransfer->getProcessed())
+            ->setWasRefundSuccessful($creditMemoTransfer->getWasRefundSuccessful())
+            ->setRefundedAmount($creditMemoTransfer->getRefundedAmount())
+            ->setProcessedAt($this->convertDate($creditMemoTransfer->getProcessedAt()))
+            ->setState($this->getState($creditMemoTransfer));
 
         return $jellyfishCreditMemo;
+    }
+
+    /**
+     * @param \Generated\Shared\Transfer\CreditMemoTransfer $creditMemoTransfer
+     *
+     * @return string|null
+     */
+    protected function getState(CreditMemoTransfer $creditMemoTransfer): ?string
+    {
+        $state = $creditMemoTransfer->getState();
+        if (array_key_exists($state, CreditMemoConstants::STATE_MAPPING)) {
+            return $state;
+        }
+
+        $state = array_search($state, CreditMemoConstants::STATE_MAPPING);
+        if ($state !== null && $state !== false) {
+            return $state;
+        }
+
+        return null;
     }
 
     /**
@@ -70,7 +96,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     protected function mapAddressToJellyfishCreditMemoAddress(
         AddressTransfer $addressTransfer
     ): JellyfishCreditMemoAddressTransfer {
-
         $jellyfishCreditMemoAddress = new JellyfishCreditMemoAddressTransfer();
         $jellyfishCreditMemoAddress->fromArray($addressTransfer->toArray(), true);
 
@@ -105,7 +130,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     protected function mapItemTransferToJellyfishCreditMemoItem(
         ItemTransfer $itemTransfer
     ): JellyfishCreditMemoItemTransfer {
-
         $jellyfishCreditMemoItemTransfer = new JellyfishCreditMemoItemTransfer();
         $jellyfishCreditMemoItemTransfer->setName($itemTransfer->getName());
         $jellyfishCreditMemoItemTransfer->setSku($itemTransfer->getSku());
@@ -123,7 +147,14 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
         OrderTransfer $orderTransfer
     ): JellyfishCreditMemoCustomerTransfer {
         $jellyfishCreditMemoCustomerTransfer = new JellyfishCreditMemoCustomerTransfer();
-        $jellyfishCreditMemoCustomerTransfer->setEmail($orderTransfer->getCustomer()->getEmail());
+        $customer = $orderTransfer->getCustomer();
+        if ($customer !== null) {
+            $jellyfishCreditMemoCustomerTransfer->setFirstName($customer->getFirstName());
+            $jellyfishCreditMemoCustomerTransfer->setLastName($customer->getLastName());
+            $jellyfishCreditMemoCustomerTransfer->setSalutation($customer->getSalutation());
+            $jellyfishCreditMemoCustomerTransfer->setExternalReference($customer->getCustomerReference());
+            $jellyfishCreditMemoCustomerTransfer->setEmail($customer->getEmail());
+        }
 
         return $jellyfishCreditMemoCustomerTransfer;
     }
@@ -140,5 +171,15 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
         }
 
         return substr($creditMemoTransfer->getStore(), 0, strpos($creditMemoTransfer->getStore(), '_'));
+    }
+
+    /**
+     * @param string $dateString
+     *
+     * @return string|false
+     */
+    protected function convertDate(string $dateString)
+    {
+        return date('Y-m-d H:i:s', strtotime($dateString));
     }
 }
