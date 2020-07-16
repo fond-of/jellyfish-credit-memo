@@ -3,7 +3,6 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Persistence;
 
 use ArrayObject;
-use Generated\Shared\Transfer\AddressTransfer;
 use Generated\Shared\Transfer\CreditMemoCollectionTransfer;
 use Generated\Shared\Transfer\CreditMemoTransfer;
 use Generated\Shared\Transfer\ItemStateTransfer;
@@ -30,7 +29,6 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
     {
         $query = $this->getFactory()
             ->createCreditMemoQuery()
-            ->leftJoinWithAddress()
             ->leftJoinWithFosCreditMemoItem()
             ->leftJoinWithSpyLocale()
             ->filterByJellyfishExportState(static::JELLYFISH_PENDING_EXPORT_STATE);
@@ -217,25 +215,6 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
     }
 
     /**
-     * @param \Orm\Zed\CreditMemo\Persistence\FosCreditMemo $creditMemoEntityTransfer
-     *
-     * @return \Generated\Shared\Transfer\AddressTransfer
-     */
-    protected function mapCreditMemoToAddressTransfer(
-        FosCreditMemo $creditMemoEntityTransfer
-    ): AddressTransfer {
-        $addressTransfer = new AddressTransfer();
-
-        $fosCreditMemoAddress = $creditMemoEntityTransfer->getAddress();
-
-        if ($fosCreditMemoAddress !== null) {
-            $addressTransfer->fromArray($fosCreditMemoAddress->toArray(), true);
-        }
-
-        return $addressTransfer;
-    }
-
-    /**
      * @param \Orm\Zed\CreditMemo\Persistence\FosCreditMemoItem[] $creditMemoItems
      *
      * @return \ArrayObject|\Generated\Shared\Transfer\ItemTransfer[]
@@ -265,7 +244,6 @@ class JellyfishCreditMemoRepository extends AbstractRepository implements Jellyf
             ->fromArray($creditMemoEntityTransfer->toArray(), true);
 
         $creditMemoTransfer->setLocale($this->mapCreditMemoEntityTransferToLocaleTransfer($creditMemoEntityTransfer));
-        $creditMemoTransfer->setAddress($this->mapCreditMemoToAddressTransfer($creditMemoEntityTransfer));
         $creditMemoTransfer->setItems(
             $this->getCreditMemoItems($creditMemoEntityTransfer->getFosCreditMemoItems())
         );

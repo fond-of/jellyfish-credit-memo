@@ -5,10 +5,8 @@ namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper;
 use ArrayObject;
 use FondOfSpryker\Shared\CreditMemo\CreditMemoConstants;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface;
-use Generated\Shared\Transfer\AddressTransfer;
 use Generated\Shared\Transfer\CreditMemoTransfer;
 use Generated\Shared\Transfer\ItemTransfer;
-use Generated\Shared\Transfer\JellyfishCreditMemoAddressTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoCustomerTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoTransfer;
@@ -49,7 +47,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
             ->setLastName($creditMemoTransfer->getLastName())
             ->setEmail($creditMemoTransfer->getEmail())
             ->setCustomer($this->mapOrderTransferToJellyfishCreditMemoCustomerTransfer($orderTransfer))
-            ->setAddress($this->mapAddressToJellyfishCreditMemoAddress($creditMemoTransfer->getAddress()))
             ->setItems($this->getJellyfishCreditMemoItems($creditMemoTransfer->getItems()))
             ->setLocale($creditMemoTransfer->getLocale()->getLocaleName())
             ->setStore($creditMemoTransfer->getStore())
@@ -86,20 +83,6 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
         }
 
         return null;
-    }
-
-    /**
-     * @param \Generated\Shared\Transfer\AddressTransfer $addressTransfer
-     *
-     * @return \Generated\Shared\Transfer\JellyfishCreditMemoTransfer
-     */
-    protected function mapAddressToJellyfishCreditMemoAddress(
-        AddressTransfer $addressTransfer
-    ): JellyfishCreditMemoAddressTransfer {
-        $jellyfishCreditMemoAddress = new JellyfishCreditMemoAddressTransfer();
-        $jellyfishCreditMemoAddress->fromArray($addressTransfer->toArray(), true);
-
-        return $jellyfishCreditMemoAddress;
     }
 
     /**
