@@ -60,7 +60,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
             ->setProcessed($creditMemoTransfer->getProcessed())
             ->setWasRefundSuccessful($creditMemoTransfer->getWasRefundSuccessful())
             ->setRefundedTotal($this->mapTotalRefundAmount($creditMemoTransfer))
-            ->setChargeTotal($this->mapTotalChargeAmount($creditMemoTransfer))
+            ->setChargedTotal($this->mapTotalChargeAmount($creditMemoTransfer))
             ->setPaidTotal($this->mapTotalPaidAmount($creditMemoTransfer))
             ->setProcessedAt($this->convertDate($creditMemoTransfer->getProcessedAt()))
             ->setTaxIncluded($creditMemoTransfer->getTaxIncluded())

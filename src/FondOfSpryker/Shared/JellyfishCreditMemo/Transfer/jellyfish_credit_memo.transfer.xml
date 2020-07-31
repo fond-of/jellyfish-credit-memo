@@ -27,7 +27,7 @@
         <property name="inProgress" type="bool" />
         <property name="refundedTotal" type="JellyfishCreditMemoPrice" />
         <property name="paidTotal" type="JellyfishCreditMemoPrice" />
-        <property name="chargeTotal" type="JellyfishCreditMemoPrice" />
+        <property name="chargedTotal" type="JellyfishCreditMemoPrice" />
         <property name="wasRefundSuccessful" type="bool" />
         <property name="taxIncluded" type="bool" />
         <property name="state" type="int" />
