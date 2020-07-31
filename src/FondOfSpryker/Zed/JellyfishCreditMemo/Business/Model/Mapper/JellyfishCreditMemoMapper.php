@@ -9,6 +9,7 @@ use Generated\Shared\Transfer\CreditMemoTransfer;
 use Generated\Shared\Transfer\ItemTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoCustomerTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoItemTransfer;
+use Generated\Shared\Transfer\JellyfishCreditMemoPriceTransfer;
 use Generated\Shared\Transfer\JellyfishCreditMemoTransfer;
 use Generated\Shared\Transfer\OrderTransfer;
 
@@ -20,7 +21,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     protected $salesFacade;
 
     /**
-     * @param \FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface $salesFacade
+     * @param  \FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface  $salesFacade
      */
     public function __construct(JellyfishCreditMemoToSalesFacadeInterface $salesFacade)
     {
@@ -28,7 +29,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     }
 
     /**
-     * @param \Generated\Shared\Transfer\CreditMemoTransfer $creditMemoTransfer
+     * @param  \Generated\Shared\Transfer\CreditMemoTransfer  $creditMemoTransfer
      *
      * @return \Generated\Shared\Transfer\JellyfishCreditMemoTransfer
      */
@@ -40,7 +41,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
         $jellyfishCreditMemo = new JellyfishCreditMemoTransfer();
         $jellyfishCreditMemo->setId($creditMemoTransfer->getIdCreditMemo())
             ->setSystemCode($this->getSystemCode($creditMemoTransfer))
-            ->setExternalReference('')
+            ->setExternalReference($creditMemoTransfer->getExternalReference())
             ->setCreditMemoReference($creditMemoTransfer->getCreditMemoReference())
             ->setOrderReference($creditMemoTransfer->getOrderReference())
             ->setFirstName($creditMemoTransfer->getFirstName())
@@ -58,15 +59,18 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
             ->setInProgress($creditMemoTransfer->getInProgress())
             ->setProcessed($creditMemoTransfer->getProcessed())
             ->setWasRefundSuccessful($creditMemoTransfer->getWasRefundSuccessful())
-            ->setRefundedAmount($creditMemoTransfer->getRefundedAmount())
+            ->setRefundedTotal($this->mapTotalRefundAmount($creditMemoTransfer))
+            ->setChargeTotal($this->mapTotalChargeAmount($creditMemoTransfer))
+            ->setPaidTotal($this->mapTotalPaidAmount($creditMemoTransfer))
             ->setProcessedAt($this->convertDate($creditMemoTransfer->getProcessedAt()))
+            ->setTaxIncluded($creditMemoTransfer->getTaxIncluded())
             ->setState($this->getState($creditMemoTransfer));
 
         return $jellyfishCreditMemo;
     }
 
     /**
-     * @param \Generated\Shared\Transfer\CreditMemoTransfer $creditMemoTransfer
+     * @param  \Generated\Shared\Transfer\CreditMemoTransfer  $creditMemoTransfer
      *
      * @return string|null
      */
@@ -86,7 +90,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     }
 
     /**
-     * @param \ArrayObject|\Generated\Shared\Transfer\ItemTransfer[] $items
+     * @param  \ArrayObject|\Generated\Shared\Transfer\ItemTransfer[]  $items
      *
      * @return \ArrayObject|\Generated\Shared\Transfer\JellyfishCreditMemoItemTransfer[]
      */
@@ -106,7 +110,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     }
 
     /**
-     * @param \Generated\Shared\Transfer\ItemTransfer $itemTransfer
+     * @param  \Generated\Shared\Transfer\ItemTransfer  $itemTransfer
      *
      * @return \Generated\Shared\Transfer\JellyfishCreditMemoTransfer
      */
@@ -122,7 +126,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     }
 
     /**
-     * @param \Generated\Shared\Transfer\OrderTransfer $orderTransfer
+     * @param  \Generated\Shared\Transfer\OrderTransfer  $orderTransfer
      *
      * @return \Generated\Shared\Transfer\JellyfishCreditMemoCustomerTransfer
      */
@@ -143,7 +147,7 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     }
 
     /**
-     * @param \Generated\Shared\Transfer\CreditMemoTransfer $creditMemoTransfer
+     * @param  \Generated\Shared\Transfer\CreditMemoTransfer  $creditMemoTransfer
      *
      * @return string
      */
@@ -157,12 +161,57 @@ class JellyfishCreditMemoMapper implements JellyfishCreditMemoMapperInterface
     }
 
     /**
-     * @param string $dateString
+     * @param  string  $dateString
      *
      * @return string|false
      */
     protected function convertDate(string $dateString)
     {
         return date('Y-m-d H:i:s', strtotime($dateString));
+    }
+
+    /**
+     * @param  \Generated\Shared\Transfer\CreditMemoTransfer  $creditMemoTransfer
+     *
+     * @return \Generated\Shared\Transfer\JellyfishCreditMemoPriceTransfer
+     */
+    protected function mapTotalRefundAmount(CreditMemoTransfer $creditMemoTransfer): JellyfishCreditMemoPriceTransfer
+    {
+        $priceTransfer = new JellyfishCreditMemoPriceTransfer();
+        $priceTransfer
+            ->setAmount($creditMemoTransfer->getRefundedAmount())
+            ->setTaxAmount($creditMemoTransfer->getRefundedTaxAmount());
+
+        return $priceTransfer;
+    }
+
+    /**
+     * @param  \Generated\Shared\Transfer\CreditMemoTransfer  $creditMemoTransfer
+     *
+     * @return \Generated\Shared\Transfer\JellyfishCreditMemoPriceTransfer
+     */
+    protected function mapTotalChargeAmount(CreditMemoTransfer $creditMemoTransfer): JellyfishCreditMemoPriceTransfer
+    {
+        $priceTransfer = new JellyfishCreditMemoPriceTransfer();
+        $priceTransfer
+            ->setAmount($creditMemoTransfer->getChargeAmount())
+            ->setTaxAmount($creditMemoTransfer->getChargeTaxAmount());
+
+        return $priceTransfer;
+    }
+
+    /**
+     * @param  \Generated\Shared\Transfer\CreditMemoTransfer  $creditMemoTransfer
+     *
+     * @return \Generated\Shared\Transfer\JellyfishCreditMemoPriceTransfer
+     */
+    protected function mapTotalPaidAmount(CreditMemoTransfer $creditMemoTransfer): JellyfishCreditMemoPriceTransfer
+    {
+        $priceTransfer = new JellyfishCreditMemoPriceTransfer();
+        $priceTransfer
+            ->setAmount($creditMemoTransfer->getTotalAmount())
+            ->setTaxAmount($creditMemoTransfer->getTotalTaxAmount());
+
+        return $priceTransfer;
     }
 }

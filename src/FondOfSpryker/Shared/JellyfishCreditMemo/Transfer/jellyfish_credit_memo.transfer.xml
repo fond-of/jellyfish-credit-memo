@@ -25,8 +25,11 @@
         <property name="processed" type="int" />
         <property name="processedAt" type="string" />
         <property name="inProgress" type="bool" />
-        <property name="refundedAmount" type="int" />
+        <property name="refundedTotal" type="JellyfishCreditMemoPrice" />
+        <property name="paidTotal" type="JellyfishCreditMemoPrice" />
+        <property name="chargeTotal" type="JellyfishCreditMemoPrice" />
         <property name="wasRefundSuccessful" type="bool" />
+        <property name="taxIncluded" type="bool" />
         <property name="state" type="int" />
         <property name="errorMessage" type="string" />
         <property name="errorCode" type="int" />
@@ -39,6 +42,11 @@
         <property name="quantity" type="string"/>
         <property name="sku" type="string"/>
         <property name="refunded" type="bool" />
+    </transfer>
+
+    <transfer name="JellyfishCreditMemoPrice">
+        <property name="amount" type="int" />
+        <property name="taxAmount" type="int" />
     </transfer>
 
     <transfer name="JellyfishCreditMemoCustomer">
