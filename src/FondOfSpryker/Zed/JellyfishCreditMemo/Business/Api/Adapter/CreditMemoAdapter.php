@@ -9,6 +9,8 @@ use Spryker\Shared\Kernel\Transfer\AbstractTransfer;
 
 class CreditMemoAdapter extends AbstractAdapter
 {
+    protected const SUCCESS_CODE = 200;
+
     protected const CREDIT_MEMOS_URI = 'standard/credit-memos';
 
     /**
@@ -27,7 +29,7 @@ class CreditMemoAdapter extends AbstractAdapter
      */
     protected function handleResponse(ResponseInterface $response, AbstractTransfer $transfer): void
     {
-        if ($response->getStatusCode() === 500){
+        if ($response->getStatusCode() !== static::SUCCESS_CODE){
             throw new ResponseErrorException('Could not send refund response to jelly');
         }
     }
