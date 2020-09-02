@@ -3,6 +3,7 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business\Api\Adapter;
 
 use FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AbstractAdapter;
+use FondOfSpryker\Zed\JellyfishCreditMemo\Exception\ResponseErrorException;
 use Psr\Http\Message\ResponseInterface;
 use Spryker\Shared\Kernel\Transfer\AbstractTransfer;
 
@@ -26,5 +27,8 @@ class CreditMemoAdapter extends AbstractAdapter
      */
     protected function handleResponse(ResponseInterface $response, AbstractTransfer $transfer): void
     {
+        if ($response->getStatusCode() === 500){
+            throw new ResponseErrorException('Could not send refund response to jelly');
+        }
     }
 }
