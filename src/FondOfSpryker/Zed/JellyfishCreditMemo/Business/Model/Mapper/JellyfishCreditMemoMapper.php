@@ -3,7 +3,7 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper;
 
 use ArrayObject;
-use FondOfSpryker\Shared\CreditMemo\CreditMemoConstants;
+use FondOfOryx\Shared\CreditMemo\CreditMemoConstants;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Dependency\Facade\JellyfishCreditMemoToSalesFacadeInterface;
 use Generated\Shared\Transfer\CreditMemoTransfer;
 use Generated\Shared\Transfer\ItemTransfer;

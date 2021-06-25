@@ -3,7 +3,7 @@
 namespace FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Exporter;
 
 use Exception;
-use FondOfSpryker\Shared\CreditMemo\CreditMemoConstants;
+use FondOfOryx\Shared\CreditMemo\CreditMemoConstants;
 use FondOfSpryker\Zed\Jellyfish\Business\Api\Adapter\AdapterInterface;
 use FondOfSpryker\Zed\JellyfishCreditMemo\Business\Model\Mapper\JellyfishCreditMemoMapperInterface;
 use FondOfSpryker\Zed\JellyfishCreditMemo\JellyfishCreditMemoConfig;
